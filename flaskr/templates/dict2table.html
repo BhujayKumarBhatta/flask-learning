@@ -1,0 +1,25 @@
+<html>
+
+<header>
+<script type="text/javascript" src="{{ url_for('static', filename='hello.js')}}" ></script>
+</header>
+
+<body>
+
+<table border=1>
+
+{{ data }}
+
+{% for key, value in data.items() %}
+<tr>
+<th> {{ key }} </th>
+<td> {{ value }} </td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+<input type="button" onclick="sayHello()" value="click here" />
+</body>
+</html>
