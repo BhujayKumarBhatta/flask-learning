@@ -21,51 +21,56 @@ def generate_secret_key_file(filename, filepath ):
     # should be given more restrictive access
     #os.chmod(file_with_path, 0o644) 
            
-def  get_fernet_cipher_from_keyfile(filename, filepath):
-    file_with_path = os.path.join(filepath, filename)
-    with open(file_with_path, 'rb') as f:
+def  get_fernet_cipher_from_keyfile(keyfilepath):
+    #file_with_path = os.path.join(filepath, filename)
+    with open(keyfilepath, 'rb') as f:
         file_content = f.readline()        
         cipher_suite = Fernet(file_content)        
         return cipher_suite
  
           
-def encrypt_txt_in_ini_file(filename, filepath, conf_section, conf_option):
-    file_with_path = os.path.join(filepath, filename)
+def encrypt_txt_in_ini_file(keyfilepath, confilepath, conf_section, conf_option):
+    #file_with_path = os.path.join(filepath, filename)
     auto_encryption_status = (conf_section + '_' + conf_option + 
                              '_auto_encryption_status')
     print (auto_encryption_status)
     config = configparser.ConfigParser()
-    config.read(file_with_path)
+    config.read(confilepath)
     clear_text_password = config[conf_section][conf_option]
     if (config.has_option(conf_section, conf_option)) and \
         (not config.has_option(conf_section, auto_encryption_status)) :        
            clear_text_password = config[conf_section][conf_option]
            byte_password = clear_text_password.encode("utf-8")
            #print (byte_password)
-           cipher_suite = get_fernet_cipher_from_keyfile(
-               secret_key_file_name, secret_key_file_path)
+           cipher_suite = get_fernet_cipher_from_keyfile(keyfilepath)
            encrypted_password = cipher_suite.encrypt(byte_password)
            encrypted_password_text = bytes(encrypted_password).decode("utf-8")
-           print (encrypted_password_text)
+           #print (encrypted_password_text)
            config[conf_section][conf_option] = encrypted_password_text
            config[conf_section][auto_encryption_status] = 'updated'
-           with open(file_with_path, 'w') as f:
+           with open(confilepath, 'w') as f:
                config.write(f)  
+           print ("%s option has been  Encrypted and  the %s  file has been updated" %(
+              conf_option, confilepath ))
+    else:
+        print ("%s option in the %s file is %s ,hence no action taken" %(
+            auto_encryption_status, confilepath, 
+            config[conf_section][auto_encryption_status] ))
 
-def get_txt_from_ini_n_decrypt(filename, filepath, conf_section, conf_option): 
-    file_with_path = os.path.join(filepath, filename)    
+def get_txt_from_ini_n_decrypt(keyfilepath, confilepath, conf_section, conf_option): 
+    #file_with_path = os.path.join(filepath, filename)    
     auto_encryption_status = (conf_section + '_' + conf_option + 
                              '_auto_encryption_status')
     config = configparser.ConfigParser()
-    config.read(file_with_path)
+    config.read(confilepath)
     if (config.has_option(conf_section, conf_option)) and \
       (config[conf_section][auto_encryption_status] == 'updated') :
           encrpted_text_from_file = config[conf_section][conf_option]
           byte_encrpted_text = encrpted_text_from_file.encode("utf-8")
-          cipher_suite = get_fernet_cipher_from_keyfile(secret_key_file_name,
-                                                        secret_key_file_path)
+          cipher_suite = get_fernet_cipher_from_keyfile(keyfilepath)
           byte_decrpted_text = cipher_suite.decrypt(byte_encrpted_text)
-          clear_decrypted_text = bytes(byte_decrpted_text).decode("utf-8")          
+          clear_decrypted_text = bytes(byte_decrpted_text).decode("utf-8")
+          print (clear_decrypted_text)          
           return clear_decrypted_text
     
     
@@ -73,10 +78,10 @@ def get_txt_from_ini_n_decrypt(filename, filepath, conf_section, conf_option):
     
 '''
 import os
-os.chdir('/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning')
+os.chdir('/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning/')
 secret_key_file_name = 'info-ops-secret-key'
-secret_key_file_path = '/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning/bhujaykey'
-config_file_path = '/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning'
+secret_key_file_path = '/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning/bhujaykey/info-ops-secret-key'
+config_file_path = '/mnt/c/mydev/flask-tutorial/flaskr/encryption-learning/mysettings.ini'
 config_file_name = 'mysettings.ini'
 import  encrypt_with_fernet_key as efk
 #efk.generate_secret_key_file(secret_key_file_name, secret_key_file_path)
